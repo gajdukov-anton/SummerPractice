@@ -1,6 +1,8 @@
 package com.example.user.myapplication;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -46,21 +48,26 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
     }
 
     @Override
-    public CardViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public @NonNull CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         CardView cv = (CardView) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.cardview, parent, false);
         return new CardViewHolder(cv, cv.getContext());
     }
 
     @Override
-    public void onBindViewHolder(CardViewHolder cardViewHolder, int position) {
+    public void onBindViewHolder(@NonNull CardViewHolder cardViewHolder, int position) {
         CardView cardView = cardViewHolder.cardView;
         TextView content = (TextView)cardView.findViewById(R.id.content);
         TextView title = (TextView)cardView.findViewById(R.id.title);
         ImageView picture = (ImageView)cardView.findViewById(R.id.person_photo);
 
         title.setText(cards.get(position).name);
-        picture.setImageResource(cards.get(position).getPhotoId());
+        if (cards.get(position).getPhotoId() != 0) {
+            picture.setImageResource(cards.get(position).getPhotoId());
+        } else {
+            picture.setImageResource(R.drawable.emma);
+        }
+
         content.setText(cards.get(position).description);
         cardViewHolder.currentCardPosition = position;
 

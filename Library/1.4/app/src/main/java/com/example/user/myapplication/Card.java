@@ -39,6 +39,10 @@ public class Card implements Parcelable {
         return available ? "The book is available" : "The book is not available";
     }
 
+    public void setPhotoId(int id) {
+        this.photoId = id;
+    }
+
     public int getPhotoId () {
         return photoId;
     }
@@ -50,8 +54,7 @@ public class Card implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
-        // для сохранения данных используем Bundle, тут думаю понятно
-        // Можно обойтись и без него, но так, как мне кажется удобнее
+
         Bundle bundle = new Bundle();
 
         bundle.putString("id", _id);
@@ -63,7 +66,6 @@ public class Card implements Parcelable {
         bundle.putString("description", description);
         bundle.putString("link", link);
 
-        // сохраняем
         parcel.writeBundle(bundle);
     }
 

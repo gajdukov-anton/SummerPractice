@@ -41,9 +41,7 @@ public class ScrollingActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               // Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                 //      .setAction("Action", null).show();
-                 readJson();
+                 loadBooks();
             }
         });
 
@@ -81,39 +79,32 @@ public class ScrollingActivity extends AppCompatActivity {
         rv.setAdapter(adapter);
     }
 
-    public void readJson()
+    public void loadBooks()
     {
         try {
-            //Card card = JsonParser.readCompanyJSONFile(this);
-
-//            Toast.makeText(this, "Данные восстановлены" + card.year, Toast.LENGTH_LONG).show();
-//            cards.add(card);
-//            initializeAdapter();
-
-
-//            Response<List<Card>> response = serverApi.getCards().execute();
-//            Snackbar.make(rv, response.code(), Snackbar.LENGTH_LONG).show();
-//            newCards = response.body();
-
-            final Call<List<Card>> newCars = serverApi.getCards();
+            final Call<List<Card>> newCars = serverApi.getCards(1);
             newCars.enqueue(new Callback<List<Card>>() {
                 @Override
                 public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
-                    Snackbar.make(rv, "Successful", Snackbar.LENGTH_LONG).show();
-                    cards = response.body();
-                    initializeAdapter();
+                    if (response.isSuccessful()) {
+                        Snackbar.make(rv, "Successful", Snackbar.LENGTH_LONG).show();
+                        List<Card> newBook = response.body();
+                        if (newBook != null) {
+                            cards.addAll(newBook);
+                            initializeAdapter();
+                        }
+                    } else {
+                        Snackbar.make(rv, response.code(), Snackbar.LENGTH_LONG).show();
+                    }
                 }
-
                 @Override
                 public void onFailure(Call<List<Card>> call, Throwable t) {
                     Snackbar.make(rv, "Failed " + t, Snackbar.LENGTH_LONG).show();
                 }
             });
-            Snackbar.make(rv, "Successful", Snackbar.LENGTH_LONG).show();
         } catch(java.lang.Throwable e)  {
             Toast.makeText(this, "Не удалось открыть данные", Toast.LENGTH_LONG).show();
         }
-
     }
 
     void connectToServer() {

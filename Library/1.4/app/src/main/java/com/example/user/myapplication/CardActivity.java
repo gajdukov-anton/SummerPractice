@@ -17,7 +17,6 @@ public class CardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card);
-       // Bundle arguments = getIntent().getExtras();
         card = getIntent().getParcelableExtra("card");
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
