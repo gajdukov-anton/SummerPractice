@@ -60,7 +60,7 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
         ImageView picture = (ImageView)cardView.findViewById(R.id.person_photo);
 
         title.setText(cards.get(position).name);
-        picture.setImageResource(cards.get(position).photoId);
+        picture.setImageResource(cards.get(position).getPhotoId());
         content.setText(cards.get(position).description);
         cardViewHolder.currentCardPosition = position;
 

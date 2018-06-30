@@ -17,9 +17,18 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class ScrollingActivity extends AppCompatActivity {
     private List<Card> cards;
     private RecyclerView rv;
+    private Retrofit retrofit;
+    private  ServerApi serverApi;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +41,9 @@ public class ScrollingActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                       .setAction("Action", null).show();
-                readJson();
+               // Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                 //      .setAction("Action", null).show();
+                 readJson();
             }
         });
 
@@ -43,6 +52,7 @@ public class ScrollingActivity extends AppCompatActivity {
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rv.setLayoutManager(llm);
 
+        connectToServer();
         initializeData();
         initializeAdapter();
     }
@@ -74,13 +84,44 @@ public class ScrollingActivity extends AppCompatActivity {
     public void readJson()
     {
         try {
-            Card card = JsonParser.readCompanyJSONFile(this);
-            Toast.makeText(this, "Данные восстановлены" + card.year, Toast.LENGTH_LONG).show();
-            cards.add(card);
-            initializeAdapter();
-        } catch(Exception e)  {
+            //Card card = JsonParser.readCompanyJSONFile(this);
+
+//            Toast.makeText(this, "Данные восстановлены" + card.year, Toast.LENGTH_LONG).show();
+//            cards.add(card);
+//            initializeAdapter();
+
+
+//            Response<List<Card>> response = serverApi.getCards().execute();
+//            Snackbar.make(rv, response.code(), Snackbar.LENGTH_LONG).show();
+//            newCards = response.body();
+
+            final Call<List<Card>> newCars = serverApi.getCards();
+            newCars.enqueue(new Callback<List<Card>>() {
+                @Override
+                public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
+                    Snackbar.make(rv, "Successful", Snackbar.LENGTH_LONG).show();
+                    cards = response.body();
+                    initializeAdapter();
+                }
+
+                @Override
+                public void onFailure(Call<List<Card>> call, Throwable t) {
+                    Snackbar.make(rv, "Failed " + t, Snackbar.LENGTH_LONG).show();
+                }
+            });
+            Snackbar.make(rv, "Successful", Snackbar.LENGTH_LONG).show();
+        } catch(java.lang.Throwable e)  {
             Toast.makeText(this, "Не удалось открыть данные", Toast.LENGTH_LONG).show();
         }
+
+    }
+
+    void connectToServer() {
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://shrouded-garden-88616.herokuapp.com")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        serverApi = retrofit.create(ServerApi.class);
     }
 
     @Override

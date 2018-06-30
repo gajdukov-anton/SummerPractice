@@ -45,7 +45,7 @@ public class JsonParser {
         card.available = available;
         card.link = link;
         card.year = year;
-        card.id = id;
+        card._id = id;
         return card;
     }
 
@@ -59,7 +59,7 @@ public class JsonParser {
         //jsonWriter.name("id").value(company.getId());
         jsonWriter.name("name").value(card.name);
         jsonWriter.name("authors").value(card.authors);
-        jsonWriter.name("id").value(card.id);
+        jsonWriter.name("id").value(card._id);
         jsonWriter.name("available").value(card.available);
         jsonWriter.name("year").value(card.year);
         jsonWriter.name("link").value(card.link);

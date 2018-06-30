@@ -7,14 +7,17 @@ import android.os.Parcelable;
 public class Card implements Parcelable {
 
     private static final String EMPTY = "empty";
-    String id = EMPTY;
-    String name = "EMPTY";
-    String  authors = EMPTY;
-    int photoId = R.drawable.emma;
-    boolean available = false;
-    String year = EMPTY;
-    String description = EMPTY;
-    String link = EMPTY;
+    private int photoId = R.drawable.emma;
+
+    public String _id = EMPTY;
+    public String name = EMPTY;
+    public String link = EMPTY;
+    public String  authors = EMPTY;
+    public boolean available = false;
+    public String description = EMPTY;
+    public String year = EMPTY;
+
+
 
     Card(String name, String description, int photoId) {
         this.name = name;
@@ -22,11 +25,23 @@ public class Card implements Parcelable {
         this.photoId = photoId;
     }
 
-    public String availableToString()
-    {
-        return available ? "The book is available" : "The book is not aavailable";
+    Card(String id, String name, String link, String authors, boolean available, String desc, String year) {
+        this._id = id;
+        this.name = name;
+        this.link = link;
+        this.authors = authors;
+        this.available = available;
+        this.description = desc;
+        this.year = year;
     }
 
+    public String availableToString()    {
+        return available ? "The book is available" : "The book is not available";
+    }
+
+    public int getPhotoId () {
+        return photoId;
+    }
     @Override
     public int describeContents() {
         return 0;
@@ -39,7 +54,7 @@ public class Card implements Parcelable {
         // Можно обойтись и без него, но так, как мне кажется удобнее
         Bundle bundle = new Bundle();
 
-        bundle.putString("id", id);
+        bundle.putString("id", _id);
         bundle.putString("name", name);
         bundle.putString("authors", authors);
         bundle.putInt("photoId", photoId);
@@ -65,7 +80,7 @@ public class Card implements Parcelable {
     public Card(Parcel parcel) {
         Bundle bundle = parcel.readBundle();
 
-        id = bundle.getString("id");
+        _id = bundle.getString("id");
         name = bundle.getString("name");
         authors = bundle.getString("authors");
         photoId = bundle.getInt("photoId");
