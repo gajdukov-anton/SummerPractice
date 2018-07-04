@@ -4,18 +4,18 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Card implements Parcelable {
+public class Card extends Book implements Parcelable {
 
     private static final String EMPTY = "empty";
-    private int photoId = R.drawable.emma;
+    private int photoId;
 
     public String _id = EMPTY;
-    public String name = EMPTY;
-    public String link = EMPTY;
-    public String  authors = EMPTY;
-    public boolean available = false;
-    public String description = EMPTY;
-    public String year = EMPTY;
+//    public String name = EMPTY;
+//    public String link = EMPTY;
+//    public String  authors = EMPTY;
+//    public boolean available = false;
+//    public String description = EMPTY;
+//    public String year = EMPTY;
 
 
 

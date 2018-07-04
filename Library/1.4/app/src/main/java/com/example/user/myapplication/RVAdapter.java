@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Random;
 
 public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
 
@@ -62,16 +63,21 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
         ImageView picture = (ImageView)cardView.findViewById(R.id.person_photo);
 
         title.setText(cards.get(position).name);
-        if (cards.get(position).getPhotoId() != 0) {
-            picture.setImageResource(cards.get(position).getPhotoId());
-        } else {
-            picture.setImageResource(R.drawable.emma);
+        if (cards.get(position).getPhotoId() == 0) {
+            cards.get(position).setPhotoId(setPicture());
         }
-
+        picture.setImageResource(cards.get(position).getPhotoId());
         content.setText(cards.get(position).description);
         cardViewHolder.currentCardPosition = position;
 
     }
+
+    int setPicture() {
+        int photoId[] = {R.drawable.book1, R.drawable.book2, R.drawable.book3};
+        Random random = new Random();
+        return photoId[random.nextInt(photoId.length)];
+    }
+
 
     @Override
     public int getItemCount() {
