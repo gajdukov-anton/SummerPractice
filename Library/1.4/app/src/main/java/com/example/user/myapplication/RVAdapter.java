@@ -30,12 +30,13 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
             super(cv);
             cardView = cv;
 
-            mContext=context;
+            mContext = context;
             cardView.setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View v) {
-                    if(mContext instanceof ScrollingActivity){
-                        ((ScrollingActivity)mContext).showSnackbar(currentCardPosition);
-                        ((ScrollingActivity)mContext).openCard(currentCardPosition);
+                @Override
+                public void onClick(View v) {
+                    if (mContext instanceof ScrollingActivity) {
+                        ((ScrollingActivity) mContext).showSnackbar(currentCardPosition);
+                        ((ScrollingActivity) mContext).openCard(currentCardPosition);
                     }
                 }
             });
@@ -43,13 +44,13 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
     }
 
 
-
-    RVAdapter(List otherCards){
+    RVAdapter(List otherCards) {
         this.cards = otherCards;
     }
 
     @Override
-    public @NonNull CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public @NonNull
+    CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         CardView cv = (CardView) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.cardview, parent, false);
         return new CardViewHolder(cv, cv.getContext());
@@ -58,21 +59,25 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull CardViewHolder cardViewHolder, int position) {
         CardView cardView = cardViewHolder.cardView;
-        TextView content = (TextView)cardView.findViewById(R.id.content);
-        TextView title = (TextView)cardView.findViewById(R.id.title);
-        ImageView picture = (ImageView)cardView.findViewById(R.id.person_photo);
+        TextView content = (TextView) cardView.findViewById(R.id.content);
+        TextView title = (TextView) cardView.findViewById(R.id.title);
+        ImageView picture = (ImageView) cardView.findViewById(R.id.person_photo);
 
         title.setText(cards.get(position).name);
         if (cards.get(position).getPhotoId() == 0) {
             cards.get(position).setPhotoId(setPicture());
         }
         picture.setImageResource(cards.get(position).getPhotoId());
-        content.setText(cards.get(position).description);
+        content.setText(reduceText(cards.get(position).description));
         cardViewHolder.currentCardPosition = position;
 
     }
 
-    int setPicture() {
+    private String reduceText(String str) {
+        return str.length() > 72 ? str.substring(0, 70) + " ..." : str;
+    }
+
+    private int setPicture() {
         int photoId[] = {R.drawable.book1, R.drawable.book2, R.drawable.book3};
         Random random = new Random();
         return photoId[random.nextInt(photoId.length)];

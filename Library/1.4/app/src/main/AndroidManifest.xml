@@ -36,7 +36,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddBookActivity"></activity>
+        <activity android:name=".AddBookActivity" />
+        <activity
+            android:name=".WebActivity"
+            android:label="Library">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
