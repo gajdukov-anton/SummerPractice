@@ -39,7 +39,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ScrollingActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
     private List<Card> cards;
     private RecyclerView rv;
+    private RecyclerView.LayoutManager lm;
     static private Retrofit retrofit;
+    private RVAdapter adapter;
     static public ServerApi serverApi;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private int numPage = 1;
@@ -71,6 +73,7 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
                 R.color.orange_swipe, R.color.red_swipe);
 
         initializeData();
+       // update();
     }
 
     void addBook() {
@@ -93,6 +96,10 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
         Snackbar.make(rv, "Карточка с номером " + position, Snackbar.LENGTH_LONG).show();
     }
 
+     void showToast() {
+        Toast.makeText(ScrollingActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
+    }
+
     void openCard(int position) {
         Intent intent = new Intent(this, CardActivity.class);
         intent.putExtra("card", cards.get(position));
@@ -107,8 +114,27 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
     }
 
     private void initializeAdapter() {
-        RVAdapter adapter = new RVAdapter(cards);
+        adapter = new RVAdapter(cards);
         rv.setAdapter(adapter);
+        update();
+    }
+
+    private void update() {
+        adapter.setOnLoadMoreListener(new RVAdapter.OnLoadMoreListener() {
+            @Override
+            public void onLoadMore() {
+//                List<Book> newBooks = //допустим книги и допустим вы их подгрузили
+//                        cards.addAll(newBooks); //totalBooks это коллекция книг которая содержит все данные для списка
+
+                // adapter.notifyDataSetChanged();
+//                cards.add(new Card("Book", "book", R.drawable.emma));
+//                adapter.addCards(cards);
+//                rv.setAdapter(adapter);
+//                adapter.endLoading(); //когда загрузка завершена
+//                adapter.setNoMore(true); //если подгружать больше нечего
+                Toast.makeText(ScrollingActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void loadBooks(int numPage) {
@@ -118,9 +144,8 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
                 @Override
                 public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
                     if (response.isSuccessful()) {
-                        List<Card> newBook = response.body();
-                        if (newBook != null) {
-                            cards.addAll(newBook);
+                        cards = response.body();
+                        if (cards != null) {
                             initializeAdapter();
                         }
                     } else {
@@ -152,6 +177,8 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
                 .build();
         serverApi = retrofit.create(ServerApi.class);
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

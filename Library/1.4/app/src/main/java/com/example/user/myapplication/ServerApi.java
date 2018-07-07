@@ -13,5 +13,11 @@ public interface ServerApi {
     Call<List<Card>> getCards(@Path("id") int numPage);
 
     @POST("/books")
-    Call<AddBookResponse> postBook(@Body Book book);
+    Call<ResponseFromServer> postBook(@Body Book book);
+
+    @POST("/booking")
+    Call<ResponseFromServer> postBooking(@Body Booking booking);
+
+    @POST("/cancelBooking")
+    Call<ResponseFromServer> postCancel(@Body Cancel id);
 }

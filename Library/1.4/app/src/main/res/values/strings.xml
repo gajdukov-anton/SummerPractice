@@ -11,4 +11,6 @@
     <string name="action_settings">Settings</string>
     <string name="postBook">Отправить</string>
     <string name="noInternet">Отсутсвует подключение к интернету</string>
+    <string name="inputName">Введите имя и фамилию</string>
+    <string name="cancelBooking">Отменить заказ</string>
 </resources>

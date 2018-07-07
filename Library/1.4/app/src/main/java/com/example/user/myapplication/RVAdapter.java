@@ -48,6 +48,10 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
         this.cards = otherCards;
     }
 
+    void addCards(List cards) {
+        this.cards.addAll(cards);
+    }
+
     @Override
     public @NonNull
     CardViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -71,7 +75,33 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
         content.setText(reduceText(cards.get(position).description));
         cardViewHolder.currentCardPosition = position;
 
+       // if(onLoadMoreListener != null && !isLoading && !noMore && cardViewHolder.getAdapterPosition() == getItemCount() - 1) {
+        if (onLoadMoreListener != null && cardViewHolder.getAdapterPosition() == getItemCount() - 1) {
+            isLoading = true;
+            onLoadMoreListener.onLoadMore();
+        }
     }
+
+    public interface OnLoadMoreListener {
+        void onLoadMore();
+    }
+
+    private OnLoadMoreListener onLoadMoreListener;
+
+    public void setOnLoadMoreListener(OnLoadMoreListener listener) {
+        this.onLoadMoreListener = listener;
+    }
+
+    private boolean isLoading, noMore;
+
+    public void endLoading() {
+        this.isLoading = false;
+    }
+
+    public void setNoMore(boolean noMore) {
+        this.noMore = noMore;
+    }
+
 
     private String reduceText(String str) {
         return str.length() > 72 ? str.substring(0, 70) + " ..." : str;

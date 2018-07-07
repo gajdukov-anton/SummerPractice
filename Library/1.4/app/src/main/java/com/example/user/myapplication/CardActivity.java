@@ -1,26 +1,41 @@
 package com.example.user.myapplication;
 
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+import static com.example.user.myapplication.ScrollingActivity.serverApi;
 
 public class CardActivity extends AppCompatActivity {
 
     private Card card;
-   // private WebView mWebView;
+    private TextView textParam;
+    final Context context = this;
 
 
     @Override
@@ -32,13 +47,9 @@ public class CardActivity extends AppCompatActivity {
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
         buildCard();
-//        mWebView = (WebView) findViewById(R.id.webView);
-//        // включаем поддержку JavaScript
-//        mWebView.getSettings().setJavaScriptEnabled(true);
-//        mWebView.setWebViewClient(new MyWebViewClient());
-//        // указываем страницу загрузки
-//        //mWebView.loadUrl("http://developer.alexanderklimov.ru/android");
         openBrowser();
+        takeBook();
+        cancelBooking();
     }
 
     void openBrowser() {
@@ -51,40 +62,133 @@ public class CardActivity extends AppCompatActivity {
         });
     }
 
+    void takeBook() {
+        Button button = (Button) findViewById(R.id.takeBook);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Получаем вид с файла prompt.xml, который применим для диалогового окна:
+                if (card.available) {
+                    LayoutInflater li = LayoutInflater.from(context);
+                    View dialogBox = li.inflate(R.layout.dialog_box, null);
+
+                    //Создаем AlertDialog
+                    AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(context);
+
+                    //Настраиваем prompt.xml для нашего AlertDialog:
+                    mDialogBuilder.setView(dialogBox);
+
+                    //Настраиваем отображение поля для ввода текста в открытом диалоге:
+                    final EditText userInput = (EditText) dialogBox.findViewById(R.id.input_text);
+
+                    //Настраиваем сообщение в диалоговом окне:
+                    mDialogBuilder
+                            .setCancelable(false)
+                            .setPositiveButton("OK",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            if (userInput.getText().toString().length() != 0) {
+                                                Booking booking = new Booking(card._id, userInput.getText().toString());
+                                                postBookingToServer(booking);
+                                            } else {
+                                                Toast.makeText(CardActivity.this, "Пожалуйста, ввидите имя и фамилию", Snackbar.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    })
+                            .setNegativeButton("Отмена",
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+
+                    //Создаем AlertDialog:
+                    AlertDialog alertDialog = mDialogBuilder.create();
+
+                    //и отображаем его:
+                    alertDialog.show();
+                } else {
+                    Toast.makeText(CardActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
+
+    }
+
+    void cancelBooking () {
+        Button button = (Button) findViewById(R.id.cancelBooking);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!card.available) {
+                    Cancel id = new Cancel(card._id);
+                    postCancelBooking(id);
+                } else {
+                    Toast.makeText(CardActivity.this, "Чтобы отменить заказ, нужно взять книгу", Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
     void loadActivity() {
         Intent intent = new Intent(this, WebActivity.class);
         intent.putExtra("cardLink", card.link);
         startActivity(intent);//mWebView.loadUrl(card.link);
     }
 
-//    private  class MyWebViewClient extends WebViewClient
-//    {
-//        @SuppressWarnings("deprecation") @Override
-//        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//            view.loadUrl(url);
-//            return true;
-//        }
-//
-//        @TargetApi(Build.VERSION_CODES.N) @Override
-//        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-//            view.loadUrl(request.getUrl().toString());
-//            return true;
-//        }
-//
-//        @Override public void onPageFinished(WebView view, String url) {
-//            super.onPageFinished(view, url);
-//            Toast.makeText(getApplicationContext(), "Страница загружена!", Toast.LENGTH_SHORT).show();
-//        }
-//
-//        @Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
-//            super.onPageStarted(view, url, favicon);
-//            Toast.makeText(getApplicationContext(), "Начата загрузка страницы", Toast.LENGTH_SHORT)
-//                    .show();
-//        }
-//    };
+    void postBookingToServer (Booking booking) {
+        if (isOnline()) {
+            Call<ResponseFromServer> call = serverApi.postBooking(booking);
+            call.enqueue(new Callback<ResponseFromServer>() {
+                @Override
+                public void onResponse(Call<ResponseFromServer> call, Response<ResponseFromServer> response) {
+                    if (response.isSuccessful()) {
+                        ResponseFromServer info = response.body();
+                        if (info != null) {
+                            Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
+                            updateState();
+                        }
+                    } else {
+                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<ResponseFromServer> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    void postCancelBooking (Cancel id) {
+        if (isOnline()) {
+            Call<ResponseFromServer> call = serverApi.postCancel(id);
+            call.enqueue(new Callback<ResponseFromServer>() {
+                @Override
+                public void onResponse(Call<ResponseFromServer> call, Response<ResponseFromServer> response) {
+                    if (response.isSuccessful()) {
+                        ResponseFromServer info = response.body();
+                        if (info != null) {
+                            Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
+                            updateState();
+                        }
+                    } else {
+                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<ResponseFromServer> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
+        }
+    }
 
     void buildCard() {
-        TextView textParam;
+
         String text;
         textParam = findViewById(R.id.name);
         text = "Name: " + card.name;
@@ -106,6 +210,18 @@ public class CardActivity extends AppCompatActivity {
         textParam.setText(text);
     }
 
+    void updateState() {
+        String text;
+        if (card.available) {
+            card.available = false;
+        } else {
+            card.available = true;
+        }
+        textParam = findViewById(R.id.available);
+        text = "Available: " + card.availableToString();
+        textParam.setText(text);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -115,5 +231,12 @@ public class CardActivity extends AppCompatActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }
