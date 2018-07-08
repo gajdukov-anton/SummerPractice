@@ -49,7 +49,7 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
     }
 
     void addCards(List cards) {
-        this.cards.addAll(cards);
+        this.cards = cards;
     }
 
     @Override
@@ -75,7 +75,7 @@ public class RVAdapter extends RecyclerView.Adapter<RVAdapter.CardViewHolder> {
         content.setText(reduceText(cards.get(position).description));
         cardViewHolder.currentCardPosition = position;
 
-       // if(onLoadMoreListener != null && !isLoading && !noMore && cardViewHolder.getAdapterPosition() == getItemCount() - 1) {
+        //if(onLoadMoreListener != null && !isLoading && !noMore && cardViewHolder.getAdapterPosition() == getItemCount() - 1) {
         if (onLoadMoreListener != null && cardViewHolder.getAdapterPosition() == getItemCount() - 1) {
             isLoading = true;
             onLoadMoreListener.onLoadMore();

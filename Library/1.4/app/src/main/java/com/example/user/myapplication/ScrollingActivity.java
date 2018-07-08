@@ -38,13 +38,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ScrollingActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
     private List<Card> cards;
+    private List<Card> newCards;
     private RecyclerView rv;
     private RecyclerView.LayoutManager lm;
     static private Retrofit retrofit;
     private RVAdapter adapter;
     static public ServerApi serverApi;
     private SwipeRefreshLayout mSwipeRefreshLayout;
-    private int numPage = 1;
+    private int numPage = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +74,7 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
                 R.color.orange_swipe, R.color.red_swipe);
 
         initializeData();
-       // update();
+        // update();
     }
 
     void addBook() {
@@ -86,7 +87,7 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                loadBooks(1);
+                updateCards();
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         }, 1000);
@@ -96,7 +97,7 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
         Snackbar.make(rv, "Карточка с номером " + position, Snackbar.LENGTH_LONG).show();
     }
 
-     void showToast() {
+    void showToast() {
         Toast.makeText(ScrollingActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
     }
 
@@ -109,7 +110,10 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
     private void initializeData() {
         cards = new ArrayList<>();
         mSwipeRefreshLayout.setRefreshing(true);
-        loadBooks(1);
+//        loadBooks(1);
+//        initializeAdapter();
+
+        updateCards();
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
@@ -132,22 +136,65 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
 //                rv.setAdapter(adapter);
 //                adapter.endLoading(); //когда загрузка завершена
 //                adapter.setNoMore(true); //если подгружать больше нечего
-                Toast.makeText(ScrollingActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
+                //Toast.makeText(ScrollingActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
+                //adapter.endLoading(); //когда загрузка завершена
+                //adapter.setNoMore(true); //если подгружать больше нечего
+                loadPage();
+              //  adapter.endLoading();
+              //  adapter.setNoMore(true);
             }
         });
+       // adapter.setNoMore(false);
+
     }
 
-    public void loadBooks(int numPage) {
+    private void updateCards() {
+
+        if (isOnline()) {
+            final Call<List<Card>> newCars = serverApi.getCards(1);
+            newCars.enqueue(new Callback<List<Card>>() {
+
+                @Override
+                public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
+                    if (response.isSuccessful()) {
+                        if (response.body() != null) {
+                            cards = response.body();
+                            numPage = 2;
+                            initializeAdapter();
+                        }
+                    } else {
+                        Snackbar.make(rv, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Card>> call, Throwable t) {
+                    Snackbar.make(rv, "Failed " + t, Snackbar.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            Snackbar.make(rv, "Отсутсвует подключение к интернету", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    public void loadPage() {
+
         if (isOnline()) {
             Call<List<Card>> newCars = serverApi.getCards(numPage);
             newCars.enqueue(new Callback<List<Card>>() {
                 @Override
                 public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
                     if (response.isSuccessful()) {
-                        cards = response.body();
-                        if (cards != null) {
-                            initializeAdapter();
+                        if (response.body().size() != 0) {
+                            int pos = cards.size();
+                            cards.addAll(response.body());
+                            adapter.addCards(cards);
+                            rv.setAdapter(adapter);
+                            rv.scrollToPosition(pos - 4);
+                            Toast.makeText(ScrollingActivity.this, response.message(), Snackbar.LENGTH_LONG).show();
+                            numPage++;
                         }
+
                     } else {
                         Snackbar.make(rv, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
                     }
@@ -177,7 +224,6 @@ public class ScrollingActivity extends AppCompatActivity implements SwipeRefresh
                 .build();
         serverApi = retrofit.create(ServerApi.class);
     }
-
 
 
     @Override
