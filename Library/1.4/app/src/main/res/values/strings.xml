@@ -13,4 +13,5 @@
     <string name="noInternet">Отсутсвует подключение к интернету</string>
     <string name="inputName">Введите имя и фамилию</string>
     <string name="cancelBooking">Отменить заказ</string>
+    <string name="hint_search">Ввидите фразу</string>
 </resources>

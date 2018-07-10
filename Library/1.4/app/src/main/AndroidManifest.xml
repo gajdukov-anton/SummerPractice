@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".SplashScreenActivity"
+            android:name=".Activity.SplashScreenActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,7 +22,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ScrollingActivity"
+            android:name=".Activity.ScrollingActivity"
+            android:launchMode="singleTop"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -30,15 +31,15 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CardActivity"
+            android:name=".Activity.CardActivity"
             android:label="Library">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddBookActivity" />
+        <activity android:name=".Activity.AddBookActivity" />
         <activity
-            android:name=".WebActivity"
+            android:name=".Activity.WebActivity"
             android:label="Library">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
