@@ -51,14 +51,6 @@
             android:hint="@string/book_link" />
 
         <EditText
-            android:id="@+id/availableNewBook"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="10sp"
-            android:inputType="text"
-            android:hint="@string/book_status" />
-
-        <EditText
             android:id="@+id/descriptionNewBook"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -24,9 +24,11 @@ public class WebActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web);
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
         mWebView = (WebView) findViewById(R.id.webView);
         // включаем поддержку JavaScript
         mWebView.getSettings().setJavaScriptEnabled(true);

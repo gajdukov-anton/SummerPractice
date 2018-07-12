@@ -10,7 +10,7 @@ public class Card extends Book implements Parcelable {
     private int photoId;
     public String _id = EMPTY;
 
-    Card(String name, String description, int photoId) {
+    public Card(String name, String description, int photoId) {
         this.name = name;
         this.description = description;
         this.photoId = photoId;

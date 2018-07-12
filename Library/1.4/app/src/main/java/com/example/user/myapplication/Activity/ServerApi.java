@@ -22,6 +22,9 @@ public interface ServerApi {
     @GET("/books/searchBook")
     Call<List<Card>> searchBook(@Query("substring") String substring);
 
+    @GET("/books")
+    Call<List<Card>> getAvailable(@Query("available") boolean isAvailable);
+
     @POST("/books")
     Call<ResponseFromServer> postBook(@Body Book book);
 

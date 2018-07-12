@@ -22,7 +22,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.user.myapplication.Activity.ScrollingActivity.serverApi;
+import static com.example.user.myapplication.Activity.MainActivity.serverApi;
 
 public class AddBookActivity extends AppCompatActivity {
 
@@ -47,6 +47,7 @@ public class AddBookActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         postBookToServer();
+                        finish();
                     }
                 }
         );

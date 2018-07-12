@@ -14,4 +14,5 @@
     <string name="inputName">Введите имя и фамилию</string>
     <string name="cancelBooking">Отменить заказ</string>
     <string name="hint_search">Ввидите фразу</string>
+    <string name="getAvailableButton">Available</string>
 </resources>

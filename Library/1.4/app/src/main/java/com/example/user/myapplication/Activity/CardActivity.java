@@ -28,7 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-import static com.example.user.myapplication.Activity.ScrollingActivity.serverApi;
+import static com.example.user.myapplication.Activity.MainActivity.serverApi;
 
 public class CardActivity extends AppCompatActivity {
 
@@ -41,10 +41,13 @@ public class CardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card);
+
         card = getIntent().getParcelableExtra("card");
+
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
         buildCard();
         openBrowser();
         takeBook();
