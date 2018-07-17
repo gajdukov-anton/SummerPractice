@@ -1,5 +1,6 @@
 package com.example.user.myapplication;
 
+import com.example.user.myapplication.Actions.WebController;
 import com.example.user.myapplication.Activity.MainActivity;
 import com.example.user.myapplication.Objects.Card;
 
@@ -34,4 +35,6 @@ public class ExampleUnitTest {
         list.add(new Card("LOL", "LOL", R.drawable.emma));
         assertEquals(1, list.size());
     }
+
+
 }

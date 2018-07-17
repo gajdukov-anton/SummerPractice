@@ -1,18 +1,19 @@
 <resources>
     <string name="app_name">Library</string>
-    <string name="book_name">Name: </string>
+    <string name="book_name">Название: </string>
     <string name="take">Взять</string>
     <string name="back">Назад</string>
-    <string name="book_year">Year: </string>
-    <string name="book_author">Authors: </string>
-    <string name="book_link">Link: </string>
-    <string name="book_status">Available: </string>
-    <string name="book_description">Description: </string>
-    <string name="action_settings">Settings</string>
+    <string name="book_year">Год: </string>
+    <string name="book_author">Автор: </string>
+    <string name="book_link">Ссылка: </string>
+    <string name="book_status">Статус: </string>
+    <string name="book_description">Описание: </string>
+    <string name="action_settings">Настройки</string>
     <string name="postBook">Отправить</string>
     <string name="noInternet">Отсутсвует подключение к интернету</string>
     <string name="inputName">Введите имя и фамилию</string>
-    <string name="cancelBooking">Отменить заказ</string>
+    <string name="cancelBooking">Вернуть</string>
     <string name="hint_search">Ввидите фразу</string>
     <string name="getAvailableButton">Available</string>
+    <string name="getMoreAboutBook">Подробнее</string>
 </resources>

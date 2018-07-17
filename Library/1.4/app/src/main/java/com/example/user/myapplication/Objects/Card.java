@@ -8,6 +8,7 @@ public class Card extends Book implements Parcelable {
 
     private static final String EMPTY = "empty";
     private int photoId;
+    private LastBooking info;
     public String _id = EMPTY;
 
     public Card(String name, String description, int photoId) {
@@ -26,9 +27,18 @@ public class Card extends Book implements Parcelable {
         this.year = year;
     }
 
+    public void setInfo(LastBooking info) {
+        this.info = info;
+    }
+
+    public LastBooking getInfo() {
+        return this.info;
+    }
+
     public String availableToString()    {
         return available ? "The book is available" : "The book is not available";
     }
+
 
     public void setPhotoId(int id) {
         this.photoId = id;

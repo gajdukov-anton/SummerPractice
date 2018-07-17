@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,8 +62,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         rv = (RecyclerView) findViewById(R.id.rv);
         LinearLayoutManager llm = new LinearLayoutManager(this);
         rv.setLayoutManager(llm);
-        connectToServer();
 
+        connectToServer();
+        setSwipeRefreshLayout();
+        initializeData();
+        showAvailable();
+        updateData();
+    }
+
+    private void setSwipeRefreshLayout() {
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -77,9 +83,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         mSwipeRefreshLayout.setColorSchemeResources(
                 R.color.blue_swipe, R.color.green_swipe,
                 R.color.orange_swipe, R.color.red_swipe);
+    }
 
-        initializeData();
-        showAvailable();
+    private void updateData () {
+        Button button = (Button)findViewById(R.id.update_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                updateCards();
+            }
+        });
     }
 
     private void showAvailable() {
@@ -128,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         MenuItem searchItem = menu.findItem(R.id.search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(this);
-
         return true;
     }
 
@@ -139,7 +151,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (isOnline()) {
             final Call<List<Card>> newCars = serverApi.searchBook(query);
             newCars.enqueue(new Callback<List<Card>>() {
-
                 @Override
                 public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
                     if (response.isSuccessful()) {
@@ -166,31 +177,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        // User changed the text
-        //Toast.makeText(MainActivity.this, "Книга", Toast.LENGTH_LONG).show();
-
         return false;
     }
 
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        super.onNewIntent(intent);
-//        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-//            String query = intent.getStringExtra(SearchManager.QUERY);
-//            Toast.makeText(this, "Searching by: "+ query, Toast.LENGTH_SHORT).show();
-//        } else if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-//            String uri = intent.getDataString();
-//            Toast.makeText(this, "Suggestion: "+ uri, Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
-
     void showSnackbar(int position) {
         Snackbar.make(rv, "Карточка с номером " + position + "numPage: " + numPage, Snackbar.LENGTH_LONG).show();
-    }
-
-    void showToast() {
-        Toast.makeText(MainActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
     }
 
     void openCard(int position) {
@@ -235,7 +226,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (isOnline()) {
             final Call<List<Card>> newCars = serverApi.getCards(1);
             newCars.enqueue(new Callback<List<Card>>() {
-
                 @Override
                 public void onResponse(Call<List<Card>> call, Response<List<Card>> response) {
                     if (response.isSuccessful()) {
@@ -276,7 +266,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             Toast.makeText(MainActivity.this, response.message(), Snackbar.LENGTH_LONG).show();
                             numPage++;
                         }
-
                     } else {
                         Snackbar.make(rv, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
                     }
@@ -307,20 +296,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         serverApi = retrofit.create(ServerApi.class);
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
+        int id = item.getItemId();
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
-
-
 }

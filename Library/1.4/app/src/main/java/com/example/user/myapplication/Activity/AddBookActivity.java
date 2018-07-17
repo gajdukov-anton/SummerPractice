@@ -9,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -39,13 +41,14 @@ public class AddBookActivity extends AppCompatActivity {
     }
 
     void addBook() {
-        Button button;
-        button = (Button) findViewById(R.id.postBook);
+        Button button = (Button) findViewById(R.id.postBook);
+        final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
 
         button.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
+                        view.startAnimation(animation);
                         postBookToServer();
                         finish();
                     }

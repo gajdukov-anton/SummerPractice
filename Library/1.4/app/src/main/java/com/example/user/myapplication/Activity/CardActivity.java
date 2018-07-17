@@ -10,9 +10,12 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -21,6 +24,7 @@ import android.widget.Toast;
 import com.example.user.myapplication.Objects.Booking;
 import com.example.user.myapplication.Objects.Cancel;
 import com.example.user.myapplication.Objects.Card;
+import com.example.user.myapplication.Objects.InfoBook;
 import com.example.user.myapplication.Objects.ResponseFromServer;
 import com.example.user.myapplication.R;
 
@@ -52,6 +56,20 @@ public class CardActivity extends AppCompatActivity {
         openBrowser();
         takeBook();
         cancelBooking();
+        getBookInfo();
+    }
+
+    void getBookInfo() {
+        Button button = (Button) findViewById(R.id.getMoreInformation);
+        final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(animation);
+                getInfoFromServer(card._id);
+            }
+        });
     }
 
     void openBrowser() {
@@ -66,25 +84,19 @@ public class CardActivity extends AppCompatActivity {
 
     void takeBook() {
         Button button = (Button) findViewById(R.id.takeBook);
+        final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
+
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Получаем вид с файла prompt.xml, который применим для диалогового окна:
+                view.startAnimation(animation);
                 if (card.available) {
                     LayoutInflater li = LayoutInflater.from(context);
                     View dialogBox = li.inflate(R.layout.dialog_box, null);
-
-                    //Создаем AlertDialog
                     AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(context);
-
-                    //Настраиваем prompt.xml для нашего AlertDialog:
                     mDialogBuilder.setView(dialogBox);
-
-                    //Настраиваем отображение поля для ввода текста в открытом диалоге:
                     final EditText userInput = (EditText) dialogBox.findViewById(R.id.input_text);
-
-                    //Настраиваем сообщение в диалоговом окне:
                     mDialogBuilder
                             .setCancelable(false)
                             .setPositiveButton("OK",
@@ -105,10 +117,7 @@ public class CardActivity extends AppCompatActivity {
                                         }
                                     });
 
-                    //Создаем AlertDialog:
                     AlertDialog alertDialog = mDialogBuilder.create();
-
-                    //и отображаем его:
                     alertDialog.show();
                 } else {
                     Toast.makeText(CardActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
@@ -120,9 +129,11 @@ public class CardActivity extends AppCompatActivity {
 
     void cancelBooking () {
         Button button = (Button) findViewById(R.id.cancelBooking);
+        final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                view.startAnimation(animation);
                 if (!card.available) {
                     Cancel id = new Cancel(card._id);
                     postCancelBooking(id);
@@ -136,7 +147,35 @@ public class CardActivity extends AppCompatActivity {
     void loadActivity() {
         Intent intent = new Intent(this, WebActivity.class);
         intent.putExtra("cardLink", card.link);
-        startActivity(intent);//mWebView.loadUrl(card.link);
+        startActivity(intent);
+    }
+
+    void getInfoFromServer(String id) {
+        if (isOnline()) {
+            Call<InfoBook> call = serverApi.getInfoBook(id);
+            call.enqueue(new Callback<InfoBook>() {
+                @Override
+                public void onResponse(Call<InfoBook> call, Response<InfoBook> response) {
+                    if (response.isSuccessful()) {
+                        InfoBook infoBook = response.body();
+                        if (infoBook.lastBooking != null) {
+                            Toast.makeText(CardActivity.this, infoBook.lastBooking.user + "\n" + infoBook.lastBooking.taken + "\n" + infoBook.lastBooking.returned
+                                    , Snackbar.LENGTH_LONG).show();
+//                            addToCard(infoBook.lastBooking.user, infoBook.lastBooking.taken, infoBook.lastBooking.returned);
+                        } else {
+                            Toast.makeText(CardActivity.this, "Отсутсвует дополнительная  информация" + infoBook.book.authors, Snackbar.LENGTH_LONG).show();
+                        }
+                    } else {
+                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<InfoBook> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
+        }
     }
 
     void postBookingToServer (Booking booking) {
@@ -189,7 +228,20 @@ public class CardActivity extends AppCompatActivity {
         }
     }
 
-    void buildCard() {
+//    private void addToCard(String user, String taken, String returned) {
+//        String text;
+//        textParam = findViewById(R.id.user);
+//        text = "User: " + user;
+//        textParam.setText(text);
+//        textParam = findViewById(R.id.taken);
+//        text = "Taken: " + taken;
+//        textParam.setText(text);
+//        textParam = findViewById(R.id.returned);
+//        text = "Returned: " + returned;
+//        textParam.setText(text);
+//    }
+
+    private void buildCard() {
 
         String text;
         textParam = findViewById(R.id.name);
@@ -210,9 +262,10 @@ public class CardActivity extends AppCompatActivity {
         textParam = findViewById(R.id.description);
         text = "Description: " + card.description;
         textParam.setText(text);
+        textParam.setMovementMethod(new ScrollingMovementMethod());
     }
 
-    void updateState() {
+    private void updateState() {
         String text;
         if (card.available) {
             card.available = false;
