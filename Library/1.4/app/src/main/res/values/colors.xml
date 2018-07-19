@@ -8,4 +8,5 @@
     <color name="green_swipe">#00FF00</color>
     <color name="red_swipe">#FF0000</color>
     <color name="orange_swipe">#FF8C00</color>
+    <color name="border_color">#D3D3D3</color>
 </resources>

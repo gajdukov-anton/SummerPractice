@@ -158,12 +158,11 @@ public class CardActivity extends AppCompatActivity {
                 public void onResponse(Call<InfoBook> call, Response<InfoBook> response) {
                     if (response.isSuccessful()) {
                         InfoBook infoBook = response.body();
-                        if (infoBook.lastBooking != null) {
-                            Toast.makeText(CardActivity.this, infoBook.lastBooking.user + "\n" + infoBook.lastBooking.taken + "\n" + infoBook.lastBooking.returned
-                                    , Snackbar.LENGTH_LONG).show();
-//                            addToCard(infoBook.lastBooking.user, infoBook.lastBooking.taken, infoBook.lastBooking.returned);
+                        if (infoBook.lastBooking._id != null) {
+                            insertIntoCard(infoBook.lastBooking.user, infoBook.lastBooking.taken, infoBook.lastBooking.returned);
+                            setVisibleBorder();
                         } else {
-                            Toast.makeText(CardActivity.this, "Отсутсвует дополнительная  информация" + infoBook.book.authors, Snackbar.LENGTH_LONG).show();
+                            Toast.makeText(CardActivity.this, "Отсутсвует дополнительная  информация", Snackbar.LENGTH_LONG).show();
                         }
                     } else {
                         Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
@@ -228,18 +227,32 @@ public class CardActivity extends AppCompatActivity {
         }
     }
 
-//    private void addToCard(String user, String taken, String returned) {
-//        String text;
-//        textParam = findViewById(R.id.user);
-//        text = "User: " + user;
-//        textParam.setText(text);
-//        textParam = findViewById(R.id.taken);
-//        text = "Taken: " + taken;
-//        textParam.setText(text);
-//        textParam = findViewById(R.id.returned);
-//        text = "Returned: " + returned;
-//        textParam.setText(text);
-//    }
+
+
+    private void insertIntoCard(String user, String taken, String returned) {
+        String text;
+        textParam = findViewById(R.id.user);
+        text = "User: " + user;
+        textParam.setVisibility(View.VISIBLE);
+        textParam.setText(text);
+        textParam = findViewById(R.id.taken);
+        text = "Taken: " + taken;
+        textParam.setText(text);
+        textParam.setVisibility(View.VISIBLE);
+        textParam = findViewById(R.id.returned);
+        text = "Returned: " + returned;
+        textParam.setText(text);
+        textParam.setVisibility(View.VISIBLE);
+    }
+
+    private void setVisibleBorder() {
+        View border = (View)findViewById(R.id.userBorder);
+        border.setVisibility(View.VISIBLE);
+        border = (View)findViewById(R.id.takenBorder);
+        border.setVisibility(View.VISIBLE);
+        border = (View)findViewById(R.id.returnedBorder);
+        border.setVisibility(View.VISIBLE);
+    }
 
     private void buildCard() {
 
