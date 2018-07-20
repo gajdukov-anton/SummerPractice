@@ -23,7 +23,7 @@ import android.widget.Toast;
 import com.example.user.myapplication.Objects.Booking;
 import com.example.user.myapplication.Objects.Cancel;
 import com.example.user.myapplication.Objects.Card;
-import com.example.user.myapplication.Objects.InfoBook;
+import com.example.user.myapplication.Objects.FullInformationAboutBook;
 import com.example.user.myapplication.Objects.ResponseFromServer;
 import com.example.user.myapplication.R;
 
@@ -36,9 +36,8 @@ import static com.example.user.myapplication.Activity.MainActivity.serverApi;
 public class CardActivity extends AppCompatActivity {
 
     private Card card;
-    private InfoBook infoBook;
+    private FullInformationAboutBook informationFromServerAboutBook;
     final Context context = this;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +59,41 @@ public class CardActivity extends AppCompatActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
+    private void setMainDataIntoCard() {
+        setValueToField("Name: ", R.id.name, card.name);
+        setValueToField("Authors: ", R.id.authors, card.authors);
+        setValueToField("Year: ", R.id.year, card.year);
+        setValueToField("Link: ", R.id.link, card.link);
+        setValueToField("Available: ", R.id.available, card.availableToString());
+        setValueToField("Description: ", R.id.description, card.description);
+    }
+
+    private void setValueToField(String paramName, int paramId, String paramValue) {
+        TextView field;
+        String value;
+        field = findViewById(paramId);
+        if (field.getVisibility() != View.VISIBLE)
+            field.setVisibility(View.VISIBLE);
+        value = paramName + paramValue;
+        field.setText(value);
+    }
+
+    void activateTheIntegratedBrowser() {
+        TextView textView = (TextView) findViewById(R.id.link);
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                loadWebActivity();
+            }
+        });
+    }
+
+    void loadWebActivity() {
+        Intent intent = new Intent(this, WebActivity.class);
+        intent.putExtra("cardLink", card.link);
+        startActivity(intent);
+    }
+
     void getAdditionalDataAboutBook() {
         Button button = (Button) findViewById(R.id.getMoreInformation);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
@@ -73,16 +107,6 @@ public class CardActivity extends AppCompatActivity {
         });
     }
 
-    void activateTheIntegratedBrowser() {
-        TextView textView = (TextView) findViewById(R.id.link);
-        textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                loadActivity();
-            }
-        });
-    }
-
     void makeOrderForTheBook() {
         Button button = (Button) findViewById(R.id.takeBook);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
@@ -91,38 +115,80 @@ public class CardActivity extends AppCompatActivity {
             public void onClick(View view) {
                 view.startAnimation(animation);
                 if (card.available) {
-                    LayoutInflater li = LayoutInflater.from(context);
-                    View dialogBox = li.inflate(R.layout.dialog_box, null);
-                    AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(context);
-                    mDialogBuilder.setView(dialogBox);
-                    final EditText userInput = (EditText) dialogBox.findViewById(R.id.input_text);
-                    mDialogBuilder
-                            .setCancelable(false)
-                            .setPositiveButton("OK",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            if (userInput.getText().toString().length() != 0) {
-                                                Booking booking = new Booking(card._id, userInput.getText().toString());
-                                                postBookingToServer(booking);
-                                            } else {
-                                                Toast.makeText(CardActivity.this, "Пожалуйста, ввидите имя и фамилию", Snackbar.LENGTH_LONG).show();
-                                            }
-                                        }
-                                    })
-                            .setNegativeButton("Отмена",
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            dialog.cancel();
-                                        }
-                                    });
-
-                    AlertDialog alertDialog = mDialogBuilder.create();
-                    alertDialog.show();
+                    createDialogBoxForBooking();
                 } else {
                     Toast.makeText(CardActivity.this, "Книга уже взята", Snackbar.LENGTH_LONG).show();
                 }
             }
         });
+    }
+
+    private void createDialogBoxForBooking() {
+        LayoutInflater li = LayoutInflater.from(context);
+        View dialogBox = li.inflate(R.layout.dialog_box, null);
+        AlertDialog.Builder mDialogBuilder = new AlertDialog.Builder(context);
+        mDialogBuilder.setView(dialogBox);
+        final EditText userInput = (EditText) dialogBox.findViewById(R.id.input_text);
+        mDialogBuilder
+                .setCancelable(false)
+                .setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                if (userInput.getText().toString().length() != 0) {
+                                    Booking booking = new Booking(card._id, userInput.getText().toString());
+                                    postBookingToServer(booking);
+                                } else {
+                                    Toast.makeText(CardActivity.this, "Пожалуйста, ввидите имя и фамилию", Snackbar.LENGTH_LONG).show();
+                                }
+                            }
+                        })
+                .setNegativeButton("Отмена",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        });
+
+        AlertDialog alertDialog = mDialogBuilder.create();
+        alertDialog.show();
+    }
+
+    void postBookingToServer(Booking booking) {
+        if (isOnline()) {
+            Call<ResponseFromServer> call = serverApi.postBooking(booking);
+            call.enqueue(new Callback<ResponseFromServer>() {
+                @Override
+                public void onResponse(Call<ResponseFromServer> call, Response<ResponseFromServer> response) {
+                    if (response.isSuccessful()) {
+                        ResponseFromServer info = response.body();
+                        if (info != null) {
+                            Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
+                            updateAvailableStatus();
+                        }
+                    } else {
+                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseFromServer> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    private void updateAvailableStatus() {
+        String value;
+        TextView field;
+        if (card.available)
+            card.available = false;
+        else
+            card.available = true;
+        field = findViewById(R.id.available);
+        value = "Available: " + card.availableToString();
+        field.setText(value);
     }
 
     void cancelOrderForTheBook() {
@@ -142,63 +208,6 @@ public class CardActivity extends AppCompatActivity {
         });
     }
 
-    void loadActivity() {
-        Intent intent = new Intent(this, WebActivity.class);
-        intent.putExtra("cardLink", card.link);
-        startActivity(intent);
-    }
-
-    void getInfoFromServer(String id) {
-        if (isOnline()) {
-            Call<InfoBook> call = serverApi.getInfoBook(id);
-            call.enqueue(new Callback<InfoBook>() {
-                @Override
-                public void onResponse(Call<InfoBook> call, Response<InfoBook> response) {
-                    if (response.isSuccessful()) {
-                        infoBook = response.body();
-                        if (infoBook.lastBooking._id != null) {
-                            setAdditionalDataIntoCard();
-                        } else {
-                            Toast.makeText(CardActivity.this, "Отсутсвует дополнительная  информация", Snackbar.LENGTH_LONG).show();
-                        }
-                    } else {
-                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
-                    }
-                }
-                @Override
-                public void onFailure(Call<InfoBook> call, Throwable t) {
-                }
-            });
-        } else {
-            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
-        }
-    }
-
-    void postBookingToServer(Booking booking) {
-        if (isOnline()) {
-            Call<ResponseFromServer> call = serverApi.postBooking(booking);
-            call.enqueue(new Callback<ResponseFromServer>() {
-                @Override
-                public void onResponse(Call<ResponseFromServer> call, Response<ResponseFromServer> response) {
-                    if (response.isSuccessful()) {
-                        ResponseFromServer info = response.body();
-                        if (info != null) {
-                            Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
-                            updateAvailableState();
-                        }
-                    } else {
-                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
-                    }
-                }
-                @Override
-                public void onFailure(Call<ResponseFromServer> call, Throwable t) {
-                }
-            });
-        } else {
-            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
-        }
-    }
-
     void postCancelBooking(Cancel id) {
         if (isOnline()) {
             Call<ResponseFromServer> call = serverApi.postCancel(id);
@@ -209,12 +218,13 @@ public class CardActivity extends AppCompatActivity {
                         ResponseFromServer info = response.body();
                         if (info != null) {
                             Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
-                            updateAvailableState();
+                            updateAvailableStatus();
                         }
                     } else {
                         Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
                     }
                 }
+
                 @Override
                 public void onFailure(Call<ResponseFromServer> call, Throwable t) {
                 }
@@ -224,52 +234,45 @@ public class CardActivity extends AppCompatActivity {
         }
     }
 
+    void getInfoFromServer(String id) {
+        if (isOnline()) {
+            Call<FullInformationAboutBook> call = serverApi.getInfoBook(id);
+            call.enqueue(new Callback<FullInformationAboutBook>() {
+                @Override
+                public void onResponse(Call<FullInformationAboutBook> call, Response<FullInformationAboutBook> response) {
+                    if (response.isSuccessful()) {
+                        informationFromServerAboutBook = response.body();
+                        if (informationFromServerAboutBook.lastBooking._id != null) {
+                            setAdditionalDataIntoCard();
+                        } else {
+                            Toast.makeText(CardActivity.this, "Отсутсвует дополнительная  информация", Snackbar.LENGTH_LONG).show();
+                        }
+                    } else {
+                        Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<FullInformationAboutBook> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(CardActivity.this, "Отсутствует подключение к интернету", Snackbar.LENGTH_LONG).show();
+        }
+    }
 
     private void setAdditionalDataIntoCard() {
-        setValueToField("User: ",R.id.user , infoBook.lastBooking.user);
+        setValueToField("User: ", R.id.user, informationFromServerAboutBook.lastBooking.user);
         setVisibleBorder(R.id.userBorder);
-        setValueToField("Taken: ",R.id.taken , infoBook.lastBooking.taken);
+        setValueToField("Taken: ", R.id.taken, informationFromServerAboutBook.lastBooking.taken);
         setVisibleBorder(R.id.takenBorder);
-        setValueToField("Returned: ",R.id.returned , infoBook.lastBooking.returned);
+        setValueToField("Returned: ", R.id.returned, informationFromServerAboutBook.lastBooking.returned);
         setVisibleBorder(R.id.returnedBorder);
     }
 
     private void setVisibleBorder(int borderId) {
         View border = (View) findViewById(borderId);
         border.setVisibility(View.VISIBLE);
-    }
-
-    private void setMainDataIntoCard() {
-        setValueToField("Name: ", R.id.name, card.name);
-        setValueToField("Authors: ", R.id.authors, card.authors);
-        setValueToField("Year: ", R.id.year, card.year);
-        setValueToField("Link: ", R.id.link, card.link);
-        setValueToField("Available: ", R.id.available, card.availableToString());
-        setValueToField("Description: ", R.id.description, card.description);
-    }
-
-    private void setValueToField(String paramName, int paramId, String paramValue) {
-        TextView field;
-        String value;
-        field = findViewById(paramId);
-
-        if (field.getVisibility() != View.VISIBLE)
-            field.setVisibility(View.VISIBLE);
-
-        value = paramName + paramValue;
-        field.setText(value);
-    }
-
-    private void updateAvailableState() {
-        String value;
-        TextView field;
-        if (card.available)
-            card.available = false;
-        else
-            card.available = true;
-        field = findViewById(R.id.available);
-        value = "Available: " + card.availableToString();
-        field.setText(value);
     }
 
     @Override

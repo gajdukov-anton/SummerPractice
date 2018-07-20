@@ -4,7 +4,7 @@ import com.example.user.myapplication.Objects.Book;
 import com.example.user.myapplication.Objects.Booking;
 import com.example.user.myapplication.Objects.Cancel;
 import com.example.user.myapplication.Objects.Card;
-import com.example.user.myapplication.Objects.InfoBook;
+import com.example.user.myapplication.Objects.FullInformationAboutBook;
 import com.example.user.myapplication.Objects.ResponseFromServer;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public interface ServerApi {
     Call<List<Card>> getAvailable(@Query("available") boolean isAvailable);
 
     @GET("/books/{id}")
-    Call<InfoBook> getInfoBook(@Path("id") String idBook);
+    Call<FullInformationAboutBook> getInfoBook(@Path("id") String idBook);
 
     @POST("/books")
     Call<ResponseFromServer> postBook(@Body Book book);
