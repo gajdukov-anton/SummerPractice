@@ -10,7 +10,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,7 +36,7 @@ import static com.example.user.myapplication.Activity.MainActivity.serverApi;
 public class CardActivity extends AppCompatActivity {
 
     private Card card;
-    private TextView textParam;
+    private InfoBook infoBook;
     final Context context = this;
 
 
@@ -45,21 +44,23 @@ public class CardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_card);
-
         card = getIntent().getParcelableExtra("card");
 
+        setBackToMainActivityButton();
+        setMainDataIntoCard();
+        activateTheIntegratedBrowser();
+        makeOrderForTheBook();
+        cancelOrderForTheBook();
+        getAdditionalDataAboutBook();
+    }
+
+    private void setBackToMainActivityButton() {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
-
-        buildCard();
-        openBrowser();
-        takeBook();
-        cancelBooking();
-        getBookInfo();
     }
 
-    void getBookInfo() {
+    void getAdditionalDataAboutBook() {
         Button button = (Button) findViewById(R.id.getMoreInformation);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
 
@@ -72,7 +73,7 @@ public class CardActivity extends AppCompatActivity {
         });
     }
 
-    void openBrowser() {
+    void activateTheIntegratedBrowser() {
         TextView textView = (TextView) findViewById(R.id.link);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,11 +83,9 @@ public class CardActivity extends AppCompatActivity {
         });
     }
 
-    void takeBook() {
+    void makeOrderForTheBook() {
         Button button = (Button) findViewById(R.id.takeBook);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
-
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -124,10 +123,9 @@ public class CardActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 
-    void cancelBooking () {
+    void cancelOrderForTheBook() {
         Button button = (Button) findViewById(R.id.cancelBooking);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
         button.setOnClickListener(new View.OnClickListener() {
@@ -157,10 +155,9 @@ public class CardActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<InfoBook> call, Response<InfoBook> response) {
                     if (response.isSuccessful()) {
-                        InfoBook infoBook = response.body();
+                        infoBook = response.body();
                         if (infoBook.lastBooking._id != null) {
-                            insertIntoCard(infoBook.lastBooking.user, infoBook.lastBooking.taken, infoBook.lastBooking.returned);
-                            setVisibleBorder();
+                            setAdditionalDataIntoCard();
                         } else {
                             Toast.makeText(CardActivity.this, "Отсутсвует дополнительная  информация", Snackbar.LENGTH_LONG).show();
                         }
@@ -177,7 +174,7 @@ public class CardActivity extends AppCompatActivity {
         }
     }
 
-    void postBookingToServer (Booking booking) {
+    void postBookingToServer(Booking booking) {
         if (isOnline()) {
             Call<ResponseFromServer> call = serverApi.postBooking(booking);
             call.enqueue(new Callback<ResponseFromServer>() {
@@ -187,7 +184,7 @@ public class CardActivity extends AppCompatActivity {
                         ResponseFromServer info = response.body();
                         if (info != null) {
                             Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
-                            updateState();
+                            updateAvailableState();
                         }
                     } else {
                         Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
@@ -202,7 +199,7 @@ public class CardActivity extends AppCompatActivity {
         }
     }
 
-    void postCancelBooking (Cancel id) {
+    void postCancelBooking(Cancel id) {
         if (isOnline()) {
             Call<ResponseFromServer> call = serverApi.postCancel(id);
             call.enqueue(new Callback<ResponseFromServer>() {
@@ -212,7 +209,7 @@ public class CardActivity extends AppCompatActivity {
                         ResponseFromServer info = response.body();
                         if (info != null) {
                             Toast.makeText(CardActivity.this, info.message, Snackbar.LENGTH_LONG).show();
-                            updateState();
+                            updateAvailableState();
                         }
                     } else {
                         Toast.makeText(CardActivity.this, "Impossible to connect to server", Snackbar.LENGTH_LONG).show();
@@ -228,66 +225,51 @@ public class CardActivity extends AppCompatActivity {
     }
 
 
-
-    private void insertIntoCard(String user, String taken, String returned) {
-        String text;
-        textParam = findViewById(R.id.user);
-        text = "User: " + user;
-        textParam.setVisibility(View.VISIBLE);
-        textParam.setText(text);
-        textParam = findViewById(R.id.taken);
-        text = "Taken: " + taken;
-        textParam.setText(text);
-        textParam.setVisibility(View.VISIBLE);
-        textParam = findViewById(R.id.returned);
-        text = "Returned: " + returned;
-        textParam.setText(text);
-        textParam.setVisibility(View.VISIBLE);
+    private void setAdditionalDataIntoCard() {
+        setValueToField("User: ",R.id.user , infoBook.lastBooking.user);
+        setVisibleBorder(R.id.userBorder);
+        setValueToField("Taken: ",R.id.taken , infoBook.lastBooking.taken);
+        setVisibleBorder(R.id.takenBorder);
+        setValueToField("Returned: ",R.id.returned , infoBook.lastBooking.returned);
+        setVisibleBorder(R.id.returnedBorder);
     }
 
-    private void setVisibleBorder() {
-        View border = (View)findViewById(R.id.userBorder);
-        border.setVisibility(View.VISIBLE);
-        border = (View)findViewById(R.id.takenBorder);
-        border.setVisibility(View.VISIBLE);
-        border = (View)findViewById(R.id.returnedBorder);
+    private void setVisibleBorder(int borderId) {
+        View border = (View) findViewById(borderId);
         border.setVisibility(View.VISIBLE);
     }
 
-    private void buildCard() {
-
-        String text;
-        textParam = findViewById(R.id.name);
-        text = "Name: " + card.name;
-        textParam.setText(text);
-        textParam = findViewById(R.id.authors);
-        text = "Authors: " + card.authors;
-        textParam.setText(text);
-        textParam = findViewById(R.id.year);
-        text = "Year: " + card.year;
-        textParam.setText(text);
-        textParam = findViewById(R.id.link);
-        text = "Link: " + card.link;
-        textParam.setText(text);
-        textParam = findViewById(R.id.available);
-        text = "Available: " + card.availableToString();
-        textParam.setText(text);
-        textParam = findViewById(R.id.description);
-        text = "Description: " + card.description;
-        textParam.setText(text);
-        textParam.setMovementMethod(new ScrollingMovementMethod());
+    private void setMainDataIntoCard() {
+        setValueToField("Name: ", R.id.name, card.name);
+        setValueToField("Authors: ", R.id.authors, card.authors);
+        setValueToField("Year: ", R.id.year, card.year);
+        setValueToField("Link: ", R.id.link, card.link);
+        setValueToField("Available: ", R.id.available, card.availableToString());
+        setValueToField("Description: ", R.id.description, card.description);
     }
 
-    private void updateState() {
-        String text;
-        if (card.available) {
+    private void setValueToField(String paramName, int paramId, String paramValue) {
+        TextView field;
+        String value;
+        field = findViewById(paramId);
+
+        if (field.getVisibility() != View.VISIBLE)
+            field.setVisibility(View.VISIBLE);
+
+        value = paramName + paramValue;
+        field.setText(value);
+    }
+
+    private void updateAvailableState() {
+        String value;
+        TextView field;
+        if (card.available)
             card.available = false;
-        } else {
+        else
             card.available = true;
-        }
-        textParam = findViewById(R.id.available);
-        text = "Available: " + card.availableToString();
-        textParam.setText(text);
+        field = findViewById(R.id.available);
+        value = "Available: " + card.availableToString();
+        field.setText(value);
     }
 
     @Override
