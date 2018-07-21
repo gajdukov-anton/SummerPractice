@@ -94,19 +94,6 @@ public class CardActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    void getAdditionalDataAboutBook() {
-        Button button = (Button) findViewById(R.id.getMoreInformation);
-        final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
-
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                view.startAnimation(animation);
-                getInfoFromServer(card._id);
-            }
-        });
-    }
-
     void makeOrderForTheBook() {
         Button button = (Button) findViewById(R.id.takeBook);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
@@ -204,6 +191,19 @@ public class CardActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(CardActivity.this, "Чтобы отменить заказ, нужно взять книгу", Snackbar.LENGTH_LONG).show();
                 }
+            }
+        });
+    }
+
+    void getAdditionalDataAboutBook() {
+        Button button = (Button) findViewById(R.id.getMoreInformation);
+        final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(animation);
+                getInfoFromServer(card._id);
             }
         });
     }

@@ -28,19 +28,23 @@ import static com.example.user.myapplication.Activity.MainActivity.serverApi;
 
 public class AddBookActivity extends AppCompatActivity {
 
-    public Card book;
+    private Book book;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_book);
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        setBackToMainActivityButton();
         addBook();
     }
 
-    void addBook() {
+    private void setBackToMainActivityButton() {
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    private void addBook() {
         Button button = (Button) findViewById(R.id.postBook);
         final Animation animation = AnimationUtils.loadAnimation(this, R.anim.flicker);
 
@@ -49,28 +53,34 @@ public class AddBookActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         view.startAnimation(animation);
-                        postBookToServer();
-                        finish();
+                        getInformationAboutBookFromUser();
+                        if (book.checkForAllFieldsAreFilled()) {
+                            postBookToServer();
+                            finish();
+                        } else {
+                            Toast.makeText(AddBookActivity.this, "Пожалуйста заполните все поля", Snackbar.LENGTH_LONG).show();
+                        }
                     }
                 }
         );
     }
 
-    void postBookToServer() {
-        EditText text;
-        Book book = new Book();
-        text = (EditText) findViewById(R.id.nameNewBook);
-        book.name = text.getText().toString();
-        text = (EditText) findViewById(R.id.authorsNewBook);
-        book.authors = text.getText().toString();
-        book.available = true;
-        text = (EditText) findViewById(R.id.yearNewBook);
-        book.year = text.getText().toString();
-        text = (EditText) findViewById(R.id.linkNewBook);
-        book.link = text.getText().toString();
-        text = (EditText) findViewById(R.id.descriptionNewBook);
-        book.description = text.getText().toString();
+    private void getInformationAboutBookFromUser() {
+        book = new Book();
+        book.name = getInformationFromField(R.id.nameNewBook);
+        book.authors = getInformationFromField(R.id.authorsNewBook);
+        book.year = getInformationFromField(R.id.yearNewBook);
+        book.link = getInformationFromField(R.id.linkNewBook);
+        book.description = getInformationFromField(R.id.descriptionNewBook);
+    }
 
+    private String getInformationFromField(int idField) {
+        EditText field;
+        field = (EditText) findViewById(idField);
+        return field.getText().toString();
+    }
+
+    void postBookToServer() {
         if (isOnline()) {
             Call<ResponseFromServer> call = serverApi.postBook(book);
             call.enqueue(new Callback<ResponseFromServer>() {
@@ -112,7 +122,4 @@ public class AddBookActivity extends AppCompatActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
-
 }
-
-
